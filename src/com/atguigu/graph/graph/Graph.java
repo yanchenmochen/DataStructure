@@ -60,6 +60,10 @@ public class Graph {
         minTree.show();
         System.out.println("minTree.getMinWeight() = " + minTree.getMinWeight());
 
+        MinTree minTree2 = graph.prim2(0);
+        minTree.show();
+        System.out.println("minTree2.getMinWeight() = " + minTree2.getMinWeight());
+
     }
 
     /**
@@ -131,56 +135,57 @@ public class Graph {
     }
 
     /**
-     * //     * 通过普利姆算法获取图形的最小支撑树
-     * //     *
-     * //     * @param vertex 普利姆算法的起始顶点
-     * //     * @return 返回当前图形的最小支撑树，注意：这要求当前图形是连通图
-     * //
+     * 通过普利姆算法获取图形的最小支撑树
+     *
+     * @param vertex 普利姆算法的起始顶点
+     * @return 返回当前图形的最小支撑树，注意：这要求当前图形是连通图
+
      */
-//    public MinTree prim(int vertex) {
-//        boolean[] visited = new boolean[numberOfVertex];
-//        Arrays.fill(visited, false);
-//
-//        // 表示vertex结点已经加入最小支撑树
-//        visited[vertex] = true;
-//        MinTree minTree = new MinTree(numberOfVertex);
-//
-//
-//        // 感觉这个过程还是不太好理解。
-//        // 注意选择排序的运用
-//        while (minTree.numberOfMstEdge() < numberOfVertex - 1) {
-//            MSTEdge edge = getShortestEdge(visited);
-//            minTree.addMstEdge(edge);
-//            visited[edge.getEnd()] = true;
-//
-//        }
-//        return minTree;
-//    }
-//
-//    /**
-//     * 获取已访问顶点和未访问顶点之间相连的最短边
-//     * @param visited 辅助遍历数组
-//     * @return 获取最短边，一端是已经访问的点，一端是未访问的顶点。通过遍历求出最短的边
-//     */
-//    private MSTEdge getShortestEdge(boolean[] visited) {
-//        int minWeight = Integer.MAX_VALUE;
-//        int minStart = Integer.MAX_VALUE;
-//        int minEnd = Integer.MAX_VALUE;
-//
-//        // i 表示已经访问过的集合中的顶点
-//        for (int i = 0; i < numberOfVertex; i++) {
-//            // 表示未访问的顶点集合中的顶点
-//            for (int j = 0; j < numberOfVertex; j++) {
-//                if (visited[i] && !visited[j] && edges[i][j] < minWeight) {
-//                    minWeight = edges[i][j];
-//                    minStart = i;
-//                    minEnd = j;
-//                }
-//            }
-//        }
-//
-//        return new MSTEdge(minStart, minEnd, minWeight);
-//    }
+    public MinTree prim2(int vertex) {
+        boolean[] visited = new boolean[numberOfVertex];
+        Arrays.fill(visited, false);
+
+        // 表示vertex结点已经加入最小支撑树
+        visited[vertex] = true;
+        MinTree minTree = new MinTree(numberOfVertex);
+
+
+        // 感觉这个过程还是不太好理解。
+        // 注意选择排序的运用
+        while (minTree.numberOfMstEdge() < numberOfVertex - 1) {
+            MSTEdge edge = getShortestEdge(visited);
+            minTree.addMstEdge(edge);
+            visited[edge.getEnd()] = true;
+
+        }
+        return minTree;
+    }
+
+    /**
+     * 获取已访问顶点和未访问顶点之间相连的最短边
+     * @param visited 辅助遍历数组
+     * @return 获取最短边，一端是已经访问的点，一端是未访问的顶点。通过遍历求出最短的边
+     */
+    private MSTEdge getShortestEdge(boolean[] visited) {
+        int minWeight = Integer.MAX_VALUE;
+        int minStart = Integer.MAX_VALUE;
+        int minEnd = Integer.MAX_VALUE;
+
+        // i 表示已经访问过的集合中的顶点
+        for (int i = 0; i < numberOfVertex; i++) {
+            // 表示未访问的顶点集合中的顶点
+            for (int j = 0; j < numberOfVertex; j++) {
+                if (visited[i] && !visited[j] && edges[i][j] < minWeight) {
+                    minWeight = edges[i][j];
+                    minStart = i;
+                    minEnd = j;
+                }
+            }
+        }
+
+        return new MSTEdge(minStart, minEnd, minWeight);
+    }
+
     public Graph(String[] vertexs) {
         numberOfVertex = vertexs.length;
         this.vertexs = new String[numberOfVertex];
@@ -379,6 +384,7 @@ class MinTree {
         mstEdges = new ArrayList<>(numberOfVertex - 1);
     }
 
+
     public void show() {
         System.out.println("MinTree.show");
         System.out.println("最小支撑树如下所示：");
@@ -437,22 +443,6 @@ class MSTEdge {
     }
 }
 
-/**
- * 用于构造最小支撑树过程中辅助数组。
- */
-class MSTUtils {
-    /**
-     * 该数组的元素个数与图中的顶点个数相同。数组的元素表示的是未访问的顶点序号
-     * edges[i] edges[i].lowcost表示当前情况下i号顶点尚未被访问，
-     * 而距离已访问顶点集合中最近的点未edges[i].vertex,
-     * edges[i].lowcost表示未访问的顶点i距离已访问的顶点edges[i].vertex之间的距离
-     */
-    MinEdge[] edges;
-
-    public MSTUtils(int numberOfVertex) {
-        edges = new MinEdge[numberOfVertex];
-    }
-}
 
 /**
  * 刘大有 普利姆算法实现
