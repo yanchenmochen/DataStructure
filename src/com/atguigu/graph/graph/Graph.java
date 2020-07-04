@@ -1,14 +1,12 @@
 package com.atguigu.graph.graph;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
+import java.util.*;
 
 /**
  * 使用邻接矩阵实现图类
  *
  * @author songquanheng
- * @Time: 2020/6/20-11:32
+ * 2020/6/20-11:32
  */
 public class Graph {
     /**
@@ -27,6 +25,9 @@ public class Graph {
      */
     private int[][] edges;
 
+    /**
+     * @param args 主函数的参数
+     */
     public static void main(String[] args) {
         String[] vertices = "A B C D E F G".split(" ");
         Graph graph = new Graph(vertices);
@@ -45,17 +46,6 @@ public class Graph {
 
         graph.show();
 
-        graph.dfs();
-        System.out.println();
-        graph.dfs(2);
-        System.out.println();
-
-        graph.bfs();
-        System.out.println();
-
-        graph.bfs(2);
-        System.out.println();
-
         MinTree minTree = graph.prim(0);
         minTree.show();
         System.out.println("minTree.getMinWeight() = " + minTree.getMinWeight());
@@ -64,6 +54,87 @@ public class Graph {
         minTree.show();
         System.out.println("minTree2.getMinWeight() = " + minTree2.getMinWeight());
 
+        List<EdgeData> kruskal = graph.kruscal();
+        System.out.println(kruskal);
+        // 打印最小支撑树的权值和。
+        System.out.println("kruskal.stream().mapToInt(EdgeData::getCost).sum() = " + kruskal.stream().mapToInt(EdgeData::getCost).sum());
+
+
+    }
+
+    /**
+     * 返回最小支撑树
+     *
+     * @return 最小支撑树的组成的边
+     */
+    public List<EdgeData> kruscal() {
+        // 排序
+        List<EdgeData> edgeDataCollection = getEdges();
+        Collections.sort(edgeDataCollection);
+
+        System.out.println("edgeDataCollection.size() = " + edgeDataCollection.size());
+        System.out.println(edgeDataCollection);
+        // 用来保存每个顶点的终点, 初始化均为0
+        int[] destinations = new int[getNumberOfVertex()];
+        List<EdgeData> result = new ArrayList<>();
+        // 当结果中的边数小于顶点数-1，继续循环
+        while (result.size() < getNumberOfVertex() - 1) {
+            EdgeData leastCostEdge = edgeDataCollection.remove(0);
+
+
+            // 如果未构成回环，则该边应该加入最小支撑树
+            int m = getEnd(leastCostEdge.getStart(), destinations);
+            int n = getEnd(leastCostEdge.getEnd(), destinations);
+            if (m != n) {
+                result.add(leastCostEdge);
+                destinations[m] = n;
+            }
+
+
+        }
+        return result;
+    }
+
+    /**
+     * 返回尝试假如的边是否构成回环
+     * @param destinations 辅助数组
+     * @param leastCostEdge 新尝试加入的最小权重的边
+     * @return 返回尝试假如的最小边是否构成回环
+     */
+    private boolean isLoop(int[] destinations, EdgeData leastCostEdge) {
+        int startDestination = getEnd(leastCostEdge.getStart(), destinations);
+        int endDestination = getEnd(leastCostEdge.getEnd(), destinations);
+        return startDestination == endDestination;
+    }
+
+    /**
+     * @param vertexIndex 顶点索引
+     * @param destinations 保存每个顶点的终点
+     * @return 返回顶点vertexIndex的终点的索引
+     */
+    private int getEnd(int vertexIndex, int[] destinations) {
+        int i = vertexIndex;
+        while (destinations[i] != 0) {
+            i = destinations[i];
+        }
+        return i;
+    }
+
+    /**
+     * @return 返回图形中的所有边
+     */
+    private List<EdgeData> getEdges() {
+        List<EdgeData> result = new ArrayList<EdgeData>();
+        for (int i = 0; i < numberOfVertex; i++) {
+            for (int j = i + 1; j < numberOfVertex; j++) {
+                if (edges[i][j] == Integer.MAX_VALUE) {
+                    continue;
+                }
+                EdgeData edgeData = new EdgeData(i, j, edges[i][j]);
+                result.add(edgeData);
+            }
+        }
+        return result;
     }
 
     /**
@@ -134,12 +205,12 @@ public class Graph {
 
     }
 
+
     /**
      * 通过普利姆算法获取图形的最小支撑树
      *
      * @param vertex 普利姆算法的起始顶点
      * @return 返回当前图形的最小支撑树，注意：这要求当前图形是连通图
-
      */
     public MinTree prim2(int vertex) {
         boolean[] visited = new boolean[numberOfVertex];
@@ -163,6 +234,7 @@ public class Graph {
 
     /**
      * 获取已访问顶点和未访问顶点之间相连的最短边
+     *
      * @param visited 辅助遍历数组
      * @return 获取最短边，一端是已经访问的点，一端是未访问的顶点。通过遍历求出最短的边
      */
@@ -337,7 +409,7 @@ public class Graph {
      * @param vertex 顶点的序号，对于A顶点，则传入的vertex为A顶点所在的序号0
      * @return 返回该顶点的第一个邻接顶点所在的序号, 如果存在，返回顶点所在的序号，否则返回-1表示不存在
      */
-    public int getFirstNeighbour(int vertex) {
+    private int getFirstNeighbour(int vertex) {
         return neighbour(vertex, 0);
     }
 
@@ -348,7 +420,7 @@ public class Graph {
      * @param currentAdjacentVertex currentAdjacentVertex为vertex序号顶点的邻接点，求相对于这个currentAdjacentVertex的下一个邻接顶点的序号
      * @return 返回下一个邻接顶点的序号
      */
-    public int getNextNeighbour(int vertex, int currentAdjacentVertex) {
+    private int getNextNeighbour(int vertex, int currentAdjacentVertex) {
         return neighbour(vertex, currentAdjacentVertex + 1);
     }
 
@@ -380,30 +452,29 @@ public class Graph {
 class MinTree {
     ArrayList<MSTEdge> mstEdges;
 
-    public MinTree(int numberOfVertex) {
+    MinTree(int numberOfVertex) {
         mstEdges = new ArrayList<>(numberOfVertex - 1);
     }
 
 
-    public void show() {
+    void show() {
         System.out.println("MinTree.show");
         System.out.println("最小支撑树如下所示：");
-        mstEdges.stream()
-                .forEach(System.out::println);
+        mstEdges.forEach(System.out::println);
     }
 
-    public void addMstEdge(MSTEdge mstEdge) {
+    void addMstEdge(MSTEdge mstEdge) {
         mstEdges.add(mstEdge);
     }
 
-    public int numberOfMstEdge() {
+    int numberOfMstEdge() {
         return mstEdges.size();
     }
 
     /**
      * @return 返回最小支撑树的最小权重
      */
-    public int getMinWeight() {
+    int getMinWeight() {
 
         return mstEdges.stream()
                 .mapToInt(edge -> edge.getWeight())
@@ -419,7 +490,7 @@ class MSTEdge {
     int end;
     int weight;
 
-    public MSTEdge(int start, int end, int weight) {
+    MSTEdge(int start, int end, int weight) {
         this.start = start;
         this.end = end;
         this.weight = weight;
@@ -434,11 +505,11 @@ class MSTEdge {
                 '}';
     }
 
-    public int getEnd() {
+    int getEnd() {
         return end;
     }
 
-    public int getWeight() {
+    int getWeight() {
         return weight;
     }
 }
